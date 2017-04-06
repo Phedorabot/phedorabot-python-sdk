@@ -313,9 +313,11 @@ class PhedorabotAPIRequest(object):
             r = requests.post(path, data=data, headers=self.headers)
 
             if self.debug:
-                print 'Request Path :',path
-                print 'Response status code :',r.status_code
-                print 'Response headers :',r.headers
+                # print the debug message
+                print ('Request Path :'+path)
+                print ('Response status code : '+r.status_code)
+                print ('Response Headers :', r.headers)
+
 
             if r.status_code != 200:
                 if r.text is not None and len(r.text):

@@ -77,7 +77,7 @@ class PhedorabotCronjobSchedulerAPIClient(PhedorabotAPIClient):
         The cronjob script that needs to be parsed to build the cronjob time
         point graph
         '''
-        if macros is not None and len(marcos):
+        if macros is not None and len(macros):
             self.set_parameter('cron_script', macros)
 
     def set_task_description(self, task_description):

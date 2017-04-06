@@ -37,7 +37,7 @@ if __name__ == '__main__':
         if resp.is_failure():
             # We have an error
             raise PhedorabotAPIError('error', resp.get_error())
-        print resp.get_raw_data()
+        print (resp.get_raw_data())
 
     except(PhedorabotAPIError) as e:
         print(e)

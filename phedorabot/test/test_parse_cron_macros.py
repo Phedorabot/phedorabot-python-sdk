@@ -28,15 +28,13 @@ if __name__ == '__main__':
 
     # Get a list object
     cron = PhedorabotCronjobSchedulerAPIClient()
-    cron.set_task_name('My Test')
-    cron.set_task_description('The Description')
-    cron.set_subscription_id('cron job subscription id')
+    cron.set_subscription_id('crj_324073213798556798')
     cron.set_cron_macros('30 11 * * *')
-    cron.set_callback_uri('http://www.mywebsite/callback/')
-    cron.set_request_uri('/cron/task/create')
+    cron.set_request_uri('/cron/script/parse')
 
     try:
         resp = client.request.send(cron)
+
         if resp.is_failure():
             # We have an error
             raise PhedorabotAPIError('error', resp.get_error())
