@@ -38,7 +38,7 @@ class PhedorabotWebHook(object):
 
     def __init__(self):
         # stuff goes here
-        self.target_key = 'api_key'
+        self.target_key = 'phedorabot_api_key'
         self.target_hmac_key = 'phedorabot_notification_digest'
         self.response = {}
         self.headers = {}
@@ -51,6 +51,12 @@ class PhedorabotWebHook(object):
         self.result = None
         self.body = None
         self.rawHeaderDict = {}
+
+    def set_error(self, error_code):
+        self.error = error_code
+
+    def set_error_description(self, desc):
+        self.errorDescription = desc
 
     def set_api_key(self, api_key):
         self.apiKey = api_key
@@ -91,9 +97,8 @@ class PhedorabotWebHook(object):
             the integrity of this notification payload')
 
         flat = self._flatten_payload(attrs)
-        sorted(flat)
         block = []
-        for k in sorted(flat):
+        for k in sorted(flat.keys()):
             block.append("{0}={1}".format(str(k), str(flat.get(k))))
 
         hasher = hmac.new(str(self.apiSecret), ''.join(block), hashlib.sha256)
@@ -132,7 +137,7 @@ class PhedorabotWebHook(object):
 
             is_valid = True
         except (Exception, PhedorabotWebHookException) as ex:
-            # raise an exeption to this effect
+            # raise an exeption to this effect print ex
             if hasattr(ex, 'what'):
                 # This is a custom exception
                 self.error = ex.what
@@ -162,8 +167,6 @@ class PhedorabotWebHook(object):
 
         hmac_str = self._compute_hmac_string(self.payload)
         known_str = str(self.headers.get(self.target_hmac_key,''))
-        print ('Known HMAC : {0}'.format(known_str))
-        print ('Computed HMAC : {0}'.format(hmac_str))
 
         length = len(known_str) - 1
         i = 0
@@ -179,7 +182,7 @@ class PhedorabotWebHook(object):
                 i = i + 1
                 length = length - 1
 
-        return valid
+        return validity
 
     def will_validate_notification(self):
 
@@ -207,7 +210,7 @@ class PhedorabotWebHook(object):
         # digest to ensure that the payload has not been tempered with
 
         blobs = {}
-        if attrs is None or not attrs in [types.DictType, types.ListType]:
+        if attrs is None or not type(attrs) in [types.DictType, types.ListType]:
             return blobs
 
         def value_type_check(value):
@@ -235,17 +238,19 @@ class PhedorabotWebHook(object):
 
         if type(attrs) == types.DictType:
             for i,j in attrs.iteritems():
-                k = self._compute_valie_key(i, parent_key)
+                k = self._compute_valid_key(i, parent_key)
                 if type(j) in [types.DictType, types.ListType]:
                     children = self._flatten_payload(j, k)
                     for m1,n1 in children.iteritems():
                         blobs[m1] = value_type_check(n1)
+                else:
+                    blobs[k] = value_type_check(j)
 
         return blobs
 
     def _compute_valid_key(self, current_key, parent_key=None):
         if parent_key is not None:
-            return '{0}_{1}'.format(str(current_key), str(parent_key))
+            return '{0}_{1}'.format(str(parent_key), str(current_key))
         else:
             return str(current_key)
 
@@ -257,8 +262,12 @@ class PhedorabotWebHook(object):
             response['checksum'] = 'unknown'
         else:
             response['checksum'] = self.checksum
-        response['digest_key'] = self.payload.get('digest_key',None)
 
+        if self.error is not None or self.errorDescription is not None:
+            response['error'] = self.error
+            response['error_description'] = self.errorDescription
+
+        response['digest_key'] = self.payload.get('digest_key',None)
         return response
 
     def _build_headers(self):

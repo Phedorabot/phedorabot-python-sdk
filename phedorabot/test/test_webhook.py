@@ -1,6 +1,7 @@
 from phedorabot.webhook import PhedorabotWebHook
 from phedorabot.webhook import PhedorabotWebHookException
 import json
+import sys
 
 template ="""
 {"headers":{"phedorabot_sent_this":"true"
@@ -33,6 +34,7 @@ template ="""
 if __name__ == '__main__':
     # Load the templates data
     data = json.loads(template)
+
     # Wrap in a try catch block
     engine = PhedorabotWebHook()
     # Set the raw headers, this hsould normally be gotten from you web server
@@ -42,39 +44,55 @@ if __name__ == '__main__':
     engine.set_raw_body(json.dumps(data.get('body')))
 
     try:
-        # Try verify that the notification isa valid one by checking for the
-        # api key in the header of the request
-        engine.is_valid_notification()()
-        
+        # if we could not verify the payload coming from Phedorabot server
+        # we have a problem
         if engine.is_valid_notification():
-            # We have a notification that is targetted at a given api key
-            # get the target api key and use that to find its
-            # corresponding api secret key, we need this to verify that the
-            # payload is valid
-
+            # We have a valid payload coming from Phedorabot server we now need
+            # verify the payload to ensure that it has not been tempered with
+            # on its way to your server
+            # The api key would have been extracted from the headers coming and
+            # parsed in the check above so we need to get access to it so that
+            # we can select the right corresponding private key
             api_key = engine.get_api_key()
             if not api_key or not len(api_key):
-                raise ValueError(
-                'api key is not defined in this notification header')
+                raise PhedorabotWebHookException(
+                'invalid_api_key'
+                , 'Client api key is not defined in the header payload for \
+                this task execution')
 
-            # Now load this api key corresponding api secret, the webhook needs
-            # it to verify the authenticity of the payload as coming from
-            # Phedorabot server
-            msecret = 'we367736536276778'
-            engine.set_api_secret(msecret)
-            # verify the payload
-            if engine.verify_payload():
-                # At this point we know that the payload is actually coming from
-                # Phedorabot and we can now use it to perform that task that
-                # needs to be done
+            # At this point query fro the corresponding private key related to
+            # this public key
+            secret_key = 'we367736536276778'
+            # Now set the secret key, so we could verify the payload data
+            engine.set_api_secret(secret_key)
+            # Try to verify the payload
+            if not engine.verify_payload():
+                # The payload could not be verified
+                raise PhedorabotWebHookException(
+                'payload_checksum_error'
+                , 'Payload checksum failed data integrity test')
+            # We have a valid payload which we can now extract for process
+            data = engine.get_payload()
+            # use the data to runn the job you wanted to run, ensure that
+            # you do not waste time here so that you can send back response
+            # to Phedorabot but server on the status of this execution
+            # TODO: run you tasks based on the data provided here
+            print 'Task running...'
+    except (Exception, PhedorabotWebHookException) as ex:
+        # This is to ensure that we capture this error on the task execution
+        # log
+        if hasattr(ex, 'what'):
+            engine.set_error(ex.get_what())
+            engine.set_error_description(ex.get_reason())
+        else:
+            engine.set_error('error')
+            engine.set_error_description(str(ex))
 
-                payload = engine.get_payload()
-                # TODO: work with the payload
-
-    except (Exception, ValueError, PhedorabotWebHookException) as ex:
-        print ex
     finally:
-        # Always try to build response whether the passing fails or not
-        # so that you can review what happened
+        # Ensure that you update Phedorabot server with the status of the
+        # instant task execution, so that you can get the log messages for your
+        # task executions
         response = engine.build_response()
-        print response
+        # send the response back to Phedorabot server for logs by printing
+        # the json encoded version of the response
+        print (json.dumps(response))
