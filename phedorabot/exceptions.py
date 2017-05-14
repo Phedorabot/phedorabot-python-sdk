@@ -25,3 +25,9 @@ class PhedorabotAPIError(Exception):
 
     def __str__(self):
         return "Error <{0}:{1}>".format(self.what, self.reason)
+
+    def get_what(self):
+        return self.what
+
+    def get_reason(self):
+        return self.reason

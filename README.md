@@ -1,5 +1,4 @@
-Phedorabot Python Client SDK
+### Phedorabot Python Client SDK ###
 
-This is the Phedorabot Python SDK to help you interact with the Phedorabot
-
-platform
+Phedorabot is a task scheduling and cronjob APIs built for developers by
+developers
