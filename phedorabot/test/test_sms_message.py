@@ -19,7 +19,7 @@ from __future__ import absolute_import, division, print_function, with_statement
 import phedorabot
 from phedorabot.exceptions import PhedorabotAPIError
 from phedorabot.test.config import Config
-from phedorabot.cronjob import PhedorabotCronjobSchedulerAPIClient
+from phedorabot.sms import PhedorabotSMSSchedulerAPIClient
 
 if __name__ == '__main__':
 
@@ -27,14 +27,18 @@ if __name__ == '__main__':
     client = phedorabot.PhedorabotClient(Config.api_key, Config.api_secret)
 
     # Get a list object
-    cron = PhedorabotCronjobSchedulerAPIClient()
-    cron.set_subscription_id('crj_124016002236127285')
-    cron.set_cron_macros('30 11 * * *')
-    cron.set_request_uri('/cron/script/parse')
+    sms = PhedorabotSMSSchedulerAPIClient()
+    sms.set_task_name('SMS Edge Test')
+    sms.set_task_description('The SMS Edge Test')
+    sms.set_subscription_id('sms_235509178964741374')
+    sms.set_callback_uri('http://www.amastore.com/sms/callback/')
+    sms.set_request_uri('/sms/message/send')
+    sms.add_recipient('+2349076834238', 'Hello Riley, waiting for the game...')
+    sms.add_recipient('+2348065782721', 'Xmas in the coast, to the east we go...')
+    sms.set_sender_id('Flipkarts')
 
     try:
-        resp = client.request.send(cron)
-
+        resp = client.request.send(sms)
         if resp.is_failure():
             # We have an error
             raise PhedorabotAPIError('error', resp.get_error())

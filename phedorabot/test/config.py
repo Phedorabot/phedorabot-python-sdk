@@ -23,6 +23,6 @@ Provides default configurations for running tests
 
 class Config(object):
     # The api key
-    api_key = 'N3dMT3dHZ2xiMGNpUUkK'
+    api_key = 'Q3BocVdLeVh1cS9UUTdy'
     # The api secret
-    api_secret = 'OHZMUUxJamZyc3Z3cTVzTzlpaG1meEVOdkgwaGt4'
+    api_secret = 'Zkk5WlNybzlIYVhuMmdOQ3BocVdLeVh1cS9UUTdy'

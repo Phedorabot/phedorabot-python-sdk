@@ -66,10 +66,7 @@ class PhedorabotWebHookEngine(object):
         return self.apiKey
 
     def set_raw_body(self, raw_body):
-        if raw_body is not None and type(raw_body) == types.DictType:
-            self.body = json.dump(raw_body)
-        else:
-            self.body = raw_body.replace('\r\n','') or None
+        self.body = raw_body or None
 
     def set_payload(self,payload):
         self.payload = payload or {}
@@ -104,7 +101,7 @@ class PhedorabotWebHookEngine(object):
             the integrity of this notification payload')
 
         flat = self._flatten_payload(attrs)
-
+        
         block = []
         for k in sorted(flat.keys()):
             block.append("{0}={1}".format(str(k), str(flat.get(k))))

@@ -30,9 +30,9 @@ if __name__ == '__main__':
     cron = PhedorabotCronjobSchedulerAPIClient()
     cron.set_task_name('My Test')
     cron.set_task_description('The Description')
-    cron.set_subscription_id('cron job subscription id')
+    cron.set_subscription_id('crj_124016002236127285')
     cron.set_cron_macros('30 11 * * *')
-    cron.set_callback_uri('http://www.mywebsite/callback/')
+    cron.set_callback_uri('http://www.mywebsite.com/callback/')
     cron.set_request_uri('/cron/task/create')
 
     try:
